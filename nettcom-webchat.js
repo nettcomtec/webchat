@@ -1,7 +1,9 @@
 (function () {
   const scriptTag = document.currentScript;
+  const iconUrl = scriptTag.getAttribute("data-icon") || "https://nettcom.com.br/images/favicofull.ico";
   const webhook = scriptTag.getAttribute("data-webhook");
   const abrirChat10s = scriptTag.getAttribute("data-abrirChat_10s") === "true";
+
 
   const style = document.createElement("style");
   style.textContent = `
@@ -93,7 +95,7 @@
   // HTML do chat
   document.body.insertAdjacentHTML("beforeend", `
     <div id="floatingChatButton">
-      <img src="https://nettcom.com.br/images/favicofull.ico" alt="Chat">
+      <img src="${iconUrl}" alt="Chat">
     </div>
     <div id="chatContainer" style="display: none;">
       <div class="chat-active-header">
@@ -108,14 +110,16 @@
     </div>
   `);
 
+  // Define sessionId logo no início
   let sessionId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
-  let chatIniciado = false;
 
+  let chatIniciado = false;
   const chatContainer = document.getElementById('chatContainer');
   const chatMessages = document.getElementById('chatMessages');
+  let ultimasMensagens = [];
 
   async function enviarMensagemInicial() {
     const res = await fetch(webhook, {
@@ -126,7 +130,13 @@
     const data = await res.json();
     const msg = data.output || data.message || data.response;
     if (msg) adicionarMensagem(msg, 'bot');
+
+    // ✅ Agora sim: iniciar verificação de mensagens após webhook inicial
+    setInterval(verificarNovasMensagens, 3000);
   }
+
+  // Envia mensagem ao carregar
+  enviarMensagemInicial();
 
   function adicionarMensagem(text, type) {
     const div = document.createElement('div');
@@ -157,10 +167,6 @@
   function abrirChat() {
     chatContainer.style.display = 'flex';
     document.getElementById('floatingChatButton').style.display = 'none';
-    if (!chatIniciado) {
-      enviarMensagemInicial();
-      chatIniciado = true;
-    }
   }
 
   document.getElementById('floatingChatButton').addEventListener('click', abrirChat);
@@ -172,4 +178,33 @@
       if (!chatIniciado) abrirChat();
     }, 10000);
   }
+
+  async function verificarNovasMensagens() {
+    try {
+      const response = await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: "checkNew", sessionId })
+      });
+      const data = await response.json();
+
+      if (data.output && typeof data.output === "string") {
+        adicionarMensagem(data.output.trim(), 'bot');
+      }
+
+      if (Array.isArray(data.mensagens) && data.mensagens.length > 0) {
+        data.mensagens.forEach(msg => {
+          if (!ultimasMensagens.includes(msg.id)) {
+            adicionarMensagem(msg.texto, 'bot');
+            ultimasMensagens.push(msg.id);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar mensagens:', error);
+    }
+  }
+
+setInterval(verificarNovasMensagens, 3000);
+
 })();
