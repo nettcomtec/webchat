@@ -3,20 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exemplo 1 - Uso Básico2</title>
-    
-    <!-- Incluir o CSS do widget -->
-    <link rel="stylesheet" href="nettcom-webchat.css">
+    <title>Exemplo</title>
+
 </head>
 <body>
-    <!-- Incluir o JavaScript do widget -->
-    <script src="nettcom-webchat.js"></script>
-    
-    <script>
-        // Inicializar o widget quando a página carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            NettcomWebchat.init();
-        });
-    </script>
+<script
+  src="https://cdn.jsdelivr.net/gh/nettcomtec/webchat@main/nettcom-webchat.js"
+  data-webhook="https://webhook.nettchat.io/webhook/ced718ed-81a0-4795-8c2d-484bfe1a497d"
+  data-abrirChat_10s="true"
+  data-icon="https://nettcom.com.br/images/favicofull.ico">
+</script>
+
 </body>
 </html>
