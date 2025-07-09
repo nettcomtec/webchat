@@ -171,8 +171,6 @@
 
   document.getElementById('floatingChatButton').addEventListener('click', abrirChat);
 
-  enviarMensagemInicial(); // envia mensagem ao carregar
-
   if (abrirChat10s) {
     setTimeout(() => {
       if (!chatIniciado) abrirChat();
